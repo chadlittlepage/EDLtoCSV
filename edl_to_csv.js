@@ -11,7 +11,7 @@
  *
  * Author: Chad Littlepage
  * Contact: chad.littlepage@gmail.com | 323.974.0444
- * Version: 1.3
+ * Version: 1.4
  */
 
 ObjC.import('Foundation');
@@ -32,6 +32,32 @@ function setPreferredFormat(fmt) {
 	var app = Application.currentApplication();
 	app.includeStandardAdditions = true;
 	app.doShellScript('defaults write ' + BUNDLE_ID + ' outputFormat -string ' + fmt);
+}
+
+/* ── FPS detection and timecode helpers ── */
+
+function detectFps(text) {
+	var upper = text.toUpperCase();
+	if (upper.indexOf('FCM') !== -1) {
+		if (upper.indexOf('DROP') !== -1 && upper.indexOf('NON-DROP') === -1) {
+			return 29.97;
+		}
+	}
+	return 24.0;
+}
+
+function framesToTC(frames, fps) {
+	var fpsRound = Math.round(fps);
+	var totalFrames = parseInt(frames, 10);
+	if (isNaN(totalFrames) || totalFrames < 0) return '00:00:00:00';
+	var f = totalFrames % fpsRound;
+	var totalSec = Math.floor(totalFrames / fpsRound);
+	var s = totalSec % 60;
+	var totalMin = Math.floor(totalSec / 60);
+	var m = totalMin % 60;
+	var h = Math.floor(totalMin / 60);
+	function pad(n) { return n < 10 ? '0' + n : '' + n; }
+	return pad(h) + ':' + pad(m) + ':' + pad(s) + ':' + pad(f);
 }
 
 /* ── Detect EDL type ── */
@@ -79,11 +105,12 @@ function parseStandard(text) {
 
 /* ── Markers EDL parser ── */
 
-var MKR_HEADERS = ['Event', 'Reel', 'Track', 'Transition', 'Source In', 'Source Out', 'Record In', 'Record Out', 'Color', 'Marker Name', 'Duration (frames)'];
-var MKR_COL_WIDTHS = [8, 8, 7, 11, 14, 14, 14, 14, 22, 45, 18];
+var MKR_HEADERS = ['Event', 'Reel', 'Track', 'Transition', 'Source In', 'Source Out', 'Record In', 'Record Out', 'Color', 'Marker Name', 'Duration (TC)', 'Duration (frames)'];
+var MKR_COL_WIDTHS = [8, 8, 7, 11, 14, 14, 14, 14, 22, 45, 14, 18];
 
 function parseMarkers(text) {
 	var lines = text.split(/\r?\n/);
+	var fps = detectFps(text);
 	var events = [];
 
 	var eventRe = /^\s*(\d{3,})\s+(\S+)\s+(\S+)\s+(\S+)\s+(\S*)\s*(\d{2}:\d{2}:\d{2}[:;]\d{2})\s+(\d{2}:\d{2}:\d{2}[:;]\d{2})\s+(\d{2}:\d{2}:\d{2}[:;]\d{2})\s+(\d{2}:\d{2}:\d{2}[:;]\d{2})/;
@@ -113,7 +140,8 @@ function parseMarkers(text) {
 				}
 			}
 
-			events.push([m[1], m[2], m[3], m[4], m[6], m[7], m[8], m[9], color, markerName, duration]);
+			var durationTC = framesToTC(duration, fps);
+			events.push([m[1], m[2], m[3], m[4], m[6], m[7], m[8], m[9], color, markerName, durationTC, duration]);
 		}
 	}
 
@@ -356,3 +384,4 @@ function run() {
 		app.displayNotification('Output format set to XLSX.', {withTitle: 'EDL Converter'});
 	}
 }
+
