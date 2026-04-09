@@ -15,7 +15,7 @@ A lightweight macOS drag-and-drop app that converts EDL (Edit Decision List) fil
 
 ## Installation
 
-Download `EDL to CSV.app` from the [latest release](https://github.com/chadlittlepage/EDLtoCSV/releases), unzip, and place it wherever you like. The app is signed and notarized by Apple, so it opens without warnings.
+Download the `.dmg` from the [latest release](https://github.com/chadlittlepage/EDLtoCSV/releases), open it, and drag the app wherever you like. The DMG and app are both signed, notarized, and stapled by Apple — no Gatekeeper warnings on macOS 15 or macOS 26.
 
 For unsigned builds (compiled from source), use the included `Install.command` to bypass Gatekeeper.
 
@@ -70,9 +70,9 @@ To sign and notarize (requires Apple Developer ID):
 
 ```bash
 codesign --force --deep --sign "Developer ID Application: Your Name (TEAM_ID)" --options runtime "EDL to CSV.app"
-ditto -c -k --keepParent "EDL to CSV.app" EDL_to_CSV.zip
-xcrun notarytool submit EDL_to_CSV.zip --keychain-profile "notary" --wait
-xcrun stapler staple "EDL to CSV.app"
+hdiutil create -volname "EDL to CSV" -srcfolder "EDL to CSV.app" -ov -format UDZO EDL_to_CSV.dmg
+xcrun notarytool submit EDL_to_CSV.dmg --keychain-profile "notary" --wait
+xcrun stapler staple EDL_to_CSV.dmg
 ```
 
 ## Author
