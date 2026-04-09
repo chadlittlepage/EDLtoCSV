@@ -11,7 +11,17 @@ A lightweight macOS drag-and-drop app that converts CMX3600 EDL (Edit Decision L
 - **XLSX extras**: bold headers, pre-sized columns (Clip Name column is extra wide for long filenames)
 - **Auto-detects frame rate** from FCM line (24fps non-drop / 29.97fps drop frame)
 - **No dependencies**: pure JXA, runs on any Mac without Python, Node, or Homebrew
-- **Properly signed**: compiled with `osacompile`, passes Gatekeeper on copy
+- **Includes installer** for one-click setup on any Mac
+
+## Installation
+
+macOS blocks unsigned apps by default. Run the included installer once to allow it:
+
+1. Copy both `EDL to CSV.app` and `Install.command` to the same folder
+2. Double-click `Install.command`
+3. Press any key when prompted
+
+That's it. The app is now ready to use on that Mac.
 
 ## Usage
 
